@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+**/.angular/
+**/.git/
+**/.vscode/
+**/.DS_Store
+npm-debug.log

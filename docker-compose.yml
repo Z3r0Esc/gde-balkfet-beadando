@@ -1,0 +1,43 @@
+services:
+  mongodb:
+    image: mongo:8
+    container_name: hero-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+
+  webapi:
+    build:
+      context: ./source
+      dockerfile: WebApi/Dockerfile
+    image: hero-webapi:local
+    container_name: hero-webapi
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      MongoDb__ConnectionString: mongodb://mongodb:27017
+      MongoDb__Database: BALKFET
+    depends_on:
+      - mongodb
+    networks:
+      default:
+        aliases:
+          - balkfet-webapi
+    ports:
+      - "5000:5000"
+
+  webui:
+    build:
+      context: ./source
+      dockerfile: WebUI/Dockerfile
+    image: hero-webui:local
+    container_name: hero-webui
+    depends_on:
+      - webapi
+    networks:
+      - default
+    ports:
+      - "8080:80"
+
+volumes:
+  mongodb-data:

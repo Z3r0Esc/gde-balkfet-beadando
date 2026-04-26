@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: balkfet-webapi
+  namespace: balkfet-local
+  labels:
+    app: balkfet-webapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: balkfet-webapi
+  template:
+    metadata:
+      labels:
+        app: balkfet-webapi
+    spec:
+      containers:
+        - name: balkfet-webapi
+          image: ghcr.io/your-github-user/your-repo/webapi:latest
+          imagePullPolicy: Always
+          env:
+            - name: MongoDb__ConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: balkfet-secrets-local
+                  key: mongodb-url
+            - name: MongoDb__Database
+              value: BALKFET
+          ports:
+            - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: balkfet-webapi
+  namespace: balkfet-local
+spec:
+  selector:
+    app: balkfet-webapi
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+  type: ClusterIP

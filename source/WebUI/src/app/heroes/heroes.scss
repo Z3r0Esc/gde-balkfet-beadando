@@ -1,0 +1,12 @@
+/* HeroesComponent custom styles */
+
+:host {
+  display: block;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ensure clickable items look pointer-y */
+.list-group-item {
+  cursor: pointer;
+}
