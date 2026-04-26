@@ -19,6 +19,88 @@ ghcr.io/z3r0esc/gde-balkfet-beadando/webui:latest
 
 A GHCR package-ek public lathatosaguak, ezert Kubernetesben nem kell `imagePullSecret`. Privat GHCR package eseten viszont `imagePullSecret` kellene.
 
+## kind Alapu Helyi Kubernetes Telepites
+
+Ha a Docker Desktop beepitett Kubernetes klasztere nem indul el, hasznalhato kind cluster. A projekt gyokereben levo `kind-balkfet.yaml` minimalis egy control-plane node-os clustert definial.
+
+1. Sikertelen vagy felbehagyott cluster torlese:
+
+```powershell
+kind delete cluster --name balkfet
+```
+
+2. Kind cluster letrehozasa stabil node image-dzsel:
+
+```powershell
+kind create cluster --config kind-balkfet.yaml --image kindest/node:v1.32.5
+```
+
+3. Ha a `v1.32.5` image nem mukodik, fallback:
+
+```powershell
+kind delete cluster --name balkfet
+kind create cluster --config kind-balkfet.yaml --image kindest/node:v1.31.4
+```
+
+4. Cluster ellenorzese:
+
+```powershell
+kubectl get nodes
+kubectl cluster-info --context kind-balkfet
+```
+
+5. MongoDB telepitese Helm-mel:
+
+```powershell
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+kubectl create namespace balkfet-infra
+helm upgrade --install balkfet-mongodb bitnami/mongodb --namespace balkfet-infra --set auth.enabled=false
+```
+
+6. MongoDB ellenorzese:
+
+```powershell
+kubectl get pods -n balkfet-infra
+kubectl get svc -n balkfet-infra
+```
+
+7. Alkalmazas telepitese:
+
+```powershell
+kubectl apply -f deployment/local/namespace.yaml
+kubectl apply -f deployment/local/secrets.yaml
+kubectl apply -f deployment/local/webapi.yaml
+kubectl apply -f deployment/local/webui.yaml
+```
+
+8. Alkalmazas ellenorzese:
+
+```powershell
+kubectl get pods -n balkfet-local
+kubectl get svc -n balkfet-local
+kubectl describe pods -n balkfet-local
+```
+
+9. Frontend elerese port-forwarddal:
+
+```powershell
+kubectl port-forward svc/balkfet-webui 8080:80 -n balkfet-local
+```
+
+10. Teszt masik PowerShell ablakbol:
+
+```powershell
+curl.exe -i http://127.0.0.1:8080/
+curl.exe -i http://127.0.0.1:8080/api/hero
+```
+
+Megjegyzesek:
+
+- A manifestek a public GHCR image-eket hasznaljak, ezert `imagePullSecret` nem szukseges.
+- A MongoDB connection string a `deployment/local/secrets.yaml` fajlban teljes Kubernetes DNS nevvel szerepel: `mongodb://balkfet-mongodb.balkfet-infra.svc.cluster.local:27017`.
+- Ha a Bitnami chart mas service nevet hoz letre, futtasd: `kubectl get svc -n balkfet-infra`, majd szukseg eseten modositsd a `deployment/local/secrets.yaml` `mongodb-url` erteket.
+
 ## MongoDB 8 Telepitese Helmmel
 
 A backend a `MongoDb__ConnectionString` kornyezeti valtozot olvassa. A manifestekben ez a `balkfet-secrets-*` Secret `mongodb-url` kulcsabol jon.
