@@ -14,7 +14,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/webui
 
 jobs:
   build:
@@ -25,6 +24,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+
+      - name: Normalize image repository name
+        run: echo "IMAGE_REPOSITORY=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
 
       - name: Log in to GitHub Container Registry
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -41,5 +43,5 @@ jobs:
           file: ./source/WebUI/Dockerfile
           push: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/webui:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/webui:${{ github.sha }}
