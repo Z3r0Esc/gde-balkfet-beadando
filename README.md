@@ -147,17 +147,17 @@ A workflow-k:
 
 CI altal keszitett image nevek:
 
-- `ghcr.io/${{ github.repository }}/webapi:latest`
-- `ghcr.io/${{ github.repository }}/webapi:${{ github.sha }}`
-- `ghcr.io/${{ github.repository }}/webui:latest`
-- `ghcr.io/${{ github.repository }}/webui:${{ github.sha }}`
+- `ghcr.io/z3r0esc/gde-balkfet-beadando/webapi:latest`
+- `ghcr.io/z3r0esc/gde-balkfet-beadando/webapi:<commit-sha>`
+- `ghcr.io/z3r0esc/gde-balkfet-beadando/webui:latest`
+- `ghcr.io/z3r0esc/gde-balkfet-beadando/webui:<commit-sha>`
 
-A Kubernetes manifestekben a placeholder image neveket csereld a sajat GHCR image neveidre:
+A Kubernetes manifestek ezeket a public GHCR image-eket hasznaljak:
 
-- `ghcr.io/<github-user>/<repo>/webapi:latest`
-- `ghcr.io/<github-user>/<repo>/webui:latest`
+- `ghcr.io/z3r0esc/gde-balkfet-beadando/webapi:latest`
+- `ghcr.io/z3r0esc/gde-balkfet-beadando/webui:latest`
 
-Ha a GHCR package privat, Kubernetesben `imagePullSecret` kell. Beadandohoz egyszerubb a GHCR package-eket publicra allitani.
+A GHCR package-ek public lathatosaguak, ezert Kubernetesben nem kell `imagePullSecret`. Privat package eseten `imagePullSecret`-et kellene letrehozni es a Pod specben hivatkozni.
 
 ## Kubernetes
 

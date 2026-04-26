@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: balkfet-webapi
-          image: ghcr.io/your-github-user/your-repo/webapi:latest
+          image: ghcr.io/z3r0esc/gde-balkfet-beadando/webapi:latest
           imagePullPolicy: Always
           env:
             - name: MongoDb__ConnectionString

@@ -6,18 +6,18 @@
 - `kubectl`
 - Helm
 - Helyi Kubernetes klaszter, peldaul Docker Desktop Kubernetes, minikube vagy kind
-- GHCR-ben elerheto sajat image-ek:
-  - `ghcr.io/<github-user>/<repo>/webapi:latest`
-  - `ghcr.io/<github-user>/<repo>/webui:latest`
+- GHCR-ben elerheto public image-ek:
+  - `ghcr.io/z3r0esc/gde-balkfet-beadando/webapi:latest`
+  - `ghcr.io/z3r0esc/gde-balkfet-beadando/webui:latest`
 
-A manifestekben placeholder image nevek vannak. Deployment elott csereld oket a sajat GitHub repository image neveire:
+A manifestek mar a public GHCR image-eket hasznaljak:
 
 ```text
-ghcr.io/<github-user>/<repo>/webapi:latest
-ghcr.io/<github-user>/<repo>/webui:latest
+ghcr.io/z3r0esc/gde-balkfet-beadando/webapi:latest
+ghcr.io/z3r0esc/gde-balkfet-beadando/webui:latest
 ```
 
-Ha a GHCR package privat, Kubernetesben `imagePullSecret` kell. Beadandohoz javasolt a GHCR package-eket publicra allitani, igy nincs szukseg kulon registry secretre.
+A GHCR package-ek public lathatosaguak, ezert Kubernetesben nem kell `imagePullSecret`. Privat GHCR package eseten viszont `imagePullSecret` kellene.
 
 ## MongoDB 8 Telepitese Helmmel
 
@@ -47,13 +47,6 @@ kubectl get svc -n balkfet-infra
 Ha a chart mas service nevet hoz letre, modositsd a `deployment/local/secrets.yaml` es `deployment/prod/secrets.yaml` `mongodb-url` erteket.
 
 ## Lokalis Kubernetes Telepites
-
-Eloszor csereld a manifestekben a GHCR image placeholdert sajatra:
-
-- `deployment/local/webapi.yaml`
-- `deployment/local/webui.yaml`
-
-Majd:
 
 ```powershell
 kubectl apply -f deployment/local/namespace.yaml
@@ -87,13 +80,6 @@ kubectl port-forward svc/balkfet-webapi 5000:5000 -n balkfet-local
 Teszt: `http://localhost:5000/hero`
 
 ## Production Manifestek
-
-Eloszor csereld a manifestekben a GHCR image placeholdert sajatra:
-
-- `deployment/prod/webapi.yaml`
-- `deployment/prod/webui.yaml`
-
-Majd:
 
 ```powershell
 kubectl apply -f deployment/prod/namespace.yaml
