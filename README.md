@@ -1,177 +1,141 @@
 # Hero Manager
 
-Hero Manager egy egyszeru full-stack beadando alkalmazas. Az Angular frontend hosok listazasat, letrehozasat, szerkeszteset es torleset biztosito feluletet ad, az ASP.NET backend REST API-t szolgaltat, az adatok MongoDB 8-ban tarolodnak.
+## 1. Projekt Rovid Leirasa
 
-## Funkciok
+A projekt egy kontenerizalt Hero Manager webalkalmazas, amely Angular frontendbol, ASP.NET backendbol es MongoDB adatbazisbol all. Az alkalmazas egyszeru CRUD funkcionalitast biztosit hosok kezelesere. A frontend es backend Docker kontenerekbe kerult, lokalisan Docker Compose segitsegevel futtathato.
+
+## 2. Technologiak
+
+- Angular / TypeScript
+- ASP.NET / C#
+- MongoDB 8
+- Docker
+- Docker Compose
+- GitHub Actions
+- GitHub Container Registry
+- Kubernetes
+- Helm
+- kind
+
+## 3. Funkciok
 
 - Hosok listazasa
-- Uj hos letrehozasa
-- Meglevo hos nevenek modositasa
+- Hos letrehozasa
+- Hos reszleteinek megtekintese
+- Hos modositasa
 - Hos torlese
-- Backend API hivasa Angular frontendbol
-- Lokalis futtatas Docker Compose-zal
-- Docker image build frontendhez es backendhez
-- GHCR image push GitHub Actions workflow-bol
-- Kubernetes telepites local es prod manifestekkel
+- Frontend-backend kommunikacio REST API-n keresztul
 
-## Technologiak
-
-- Frontend: Angular, TypeScript, Bootstrap, Nginx
-- Backend: ASP.NET minimal API, C#
-- Domain: `Hero`
-- Adatbazis: MongoDB 8
-- Kontenerizacio: Docker, Docker Compose
-- CI/CD: GitHub Actions, GitHub Container Registry
-- Deployment: Kubernetes, Helm MongoDB chart
-
-## Projekt Szerkezet
-
-```text
-source/
-  Domain/       Domain modell
-  DataAccess/   MongoDB kapcsolat
-  WebApi/       ASP.NET REST API
-  WebUI/        Angular frontend
-deployment/
-  local/        Lokalis Kubernetes manifestek
-  prod/         Production Kubernetes manifestek
-.github/
-  workflows/   Docker image build es GHCR push workflow-k
-```
-
-## Architektura
-
-```mermaid
-flowchart LR
-    User[Felhasznalo] --> UI[Angular WebUI]
-    UI -->|/api/hero| Nginx[Nginx reverse proxy]
-    Nginx --> API[ASP.NET WebApi]
-    API --> DAL[DataAccess]
-    DAL --> DB[(MongoDB 8)]
-    API --> Domain[Domain: Hero]
-```
-
-## Lokalis .NET Build
+## 4. Lokalis Docker Compose Futtatas
 
 ```powershell
-dotnet restore source\WebApi\WebApi.csproj
-dotnet build source\HeroBackend.slnx --no-restore
+docker compose up --build -d
+docker compose ps
 ```
 
-Backend inditas lokalis MongoDB mellett:
+Elerhetosegek:
 
-```powershell
-dotnet run --project source\WebApi\WebApi.csproj
-```
+- Frontend: `http://127.0.0.1:8080`
+- Backend API: `http://127.0.0.1:5000/hero`
+- Proxyzott API: `http://127.0.0.1:8080/api/hero`
 
-## Frontend Build Windows Alatt
+## 5. CI/CD
 
-PowerShell alatt az `npm.ps1` execution policy miatt tiltott lehet. Windows eseten hasznald az `npm.cmd` valtozatot:
+A GitHub Actions workflow-k main branchre torteno push eseten automatikusan buildelik a frontend es backend Docker image-eket, majd feltoltik oket a GitHub Container Registry-be.
 
-```powershell
-cd source\WebUI
-npm.cmd ci
-npm.cmd run build:production
-```
-
-Alternativa:
-
-```powershell
-Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-```
-
-Fejlesztesi frontend API URL: `source/WebUI/src/environments/environment.development.ts`, alapbol `http://localhost:5000`.
-
-## Docker Compose Futtatas
-
-```powershell
-docker compose down -v
-docker compose up --build
-```
-
-Elert szolgaltatasok:
-
-- Frontend: `http://localhost:8080`
-- Backend API kozvetlenul: `http://localhost:5000/hero`
-- MongoDB 8: `mongodb://localhost:27017`
-
-Compose konfiguracio:
-
-- `MongoDb__ConnectionString=mongodb://mongodb:27017`
-- `MongoDb__Database=BALKFET`
-- A `webapi` service `balkfet-webapi` network aliast kap, ezert az Nginx ugyanazzal a proxy celcimmel mukodik Docker Compose es Kubernetes alatt.
-
-## API Rovid Leiras
-
-Alap endpoint: `/hero`
-
-| Muvelet | URL | Leiras |
-| --- | --- | --- |
-| GET | `/hero` | Osszes hos lekerese |
-| GET | `/hero/{id}` | Egy hos lekerese GUID alapjan |
-| POST | `/hero` | Uj hos letrehozasa |
-| PUT | `/hero/{id}` | Meglevo hos modositasa |
-| DELETE | `/hero/{id}` | Hos torlese |
-
-Pelda requestek: `source/WebApi/WebApi.http`.
-
-## Konfiguracio
-
-Backend kornyezeti valtozok:
-
-- `MongoDb__ConnectionString`: MongoDB connection string, pelda `mongodb://localhost:27017`
-- `MongoDb__Database`: adatbazis neve, alapertelmezett `BALKFET`
-
-Frontend production build:
-
-- Az Angular app relativ `/api` URL-t hasznal.
-- Az Nginx kontener a `/api/` utvonalat a `balkfet-webapi:5000` backend service-re proxyzza.
-
-## CI/CD
-
-```mermaid
-flowchart LR
-    Push[Push main branchre] --> BuildApi[Build WebApi image]
-    Push --> BuildUi[Build WebUI image]
-    BuildApi --> Login[GHCR login GITHUB_TOKEN-nel]
-    BuildUi --> Login
-    Login --> PushApi[Push webapi:latest es webapi:sha]
-    Login --> PushUi[Push webui:latest es webui:sha]
-    PR[Pull request] --> BuildOnly[Docker build csak push nelkul]
-```
-
-A workflow-k:
+Workflow-k:
 
 - `.github/workflows/ci-docker-build-api.yml`
 - `.github/workflows/ci-docker-build-ui.yml`
 
-CI altal keszitett image nevek:
+Image-ek:
 
-- `ghcr.io/z3r0esc/gde-balkfet-beadando/webapi:latest`
-- `ghcr.io/z3r0esc/gde-balkfet-beadando/webapi:<commit-sha>`
-- `ghcr.io/z3r0esc/gde-balkfet-beadando/webui:latest`
-- `ghcr.io/z3r0esc/gde-balkfet-beadando/webui:<commit-sha>`
+```text
+ghcr.io/z3r0esc/gde-balkfet-beadando/webapi:latest
+ghcr.io/z3r0esc/gde-balkfet-beadando/webui:latest
+```
 
-A Kubernetes manifestek ezeket a public GHCR image-eket hasznaljak:
+## 6. Kubernetes Telepites
 
-- `ghcr.io/z3r0esc/gde-balkfet-beadando/webapi:latest`
-- `ghcr.io/z3r0esc/gde-balkfet-beadando/webui:latest`
+A Kubernetes manifestek a GHCR-be feltoltott image-eket hasznaljak. A MongoDB Helm charttal telepitheto. A helyi Kubernetes teszteles kind clusterrel tortent.
 
-A GHCR package-ek public lathatosaguak, ezert Kubernetesben nem kell `imagePullSecret`. Privat package eseten `imagePullSecret`-et kellene letrehozni es a Pod specben hivatkozni.
+Kind cluster letrehozasa:
 
-## Kubernetes
+```powershell
+kind create cluster --config kind-balkfet.yaml --image kindest/node:v1.32.5
+```
 
-Manifestek:
+MongoDB telepitese Helm-mel:
 
-- `deployment/local`
-- `deployment/prod`
+```powershell
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+kubectl create namespace balkfet-infra
+helm upgrade --install balkfet-mongodb bitnami/mongodb --namespace balkfet-infra --set auth.enabled=false
+```
 
-Mindketto tartalmaz namespace-et, Secretet, backend Deployment/Service-t es frontend Deployment/Service-t. A MongoDB 8 telepitese Helm charttal dokumentalt a `deployment/deployment_guide.md` fajlban.
+Alkalmazas telepitese:
 
-## Hasznalati Utmutato
+```powershell
+kubectl apply -f deployment/local/namespace.yaml
+kubectl apply -f deployment/local/secrets.yaml
+kubectl apply -f deployment/local/webapi.yaml
+kubectl apply -f deployment/local/webui.yaml
+```
 
-Reszletes hasznalati utmutato: `USER_GUIDE.md`.
+Ellenorzes:
 
-## Deployment Utmutato
+```powershell
+kubectl get pods -n balkfet-infra
+kubectl get pods -n balkfet-local
+kubectl get svc -n balkfet-local
+```
 
-Kubernetes telepitesi lepesek: `deployment/deployment_guide.md`.
+Frontend elerese port-forwarddal:
+
+```powershell
+kubectl port-forward svc/balkfet-webui 8080:80 -n balkfet-local
+```
+
+## 7. Ellenorzes
+
+Masik PowerShell ablakbol:
+
+```powershell
+curl.exe -i http://127.0.0.1:8080/
+curl.exe -i http://127.0.0.1:8080/api/hero
+```
+
+Elvart proxyzott API valasz ures adatbazis eseten:
+
+```text
+HTTP/1.1 200 OK
+[]
+```
+
+## 8. Bizonyitekok / Screenshot Javaslatok
+
+- `dotnet build` sikeres kimenet
+- Angular production build sikeres kimenet
+- `docker compose ps`
+- Frontend bongeszoben
+- Backend API valasz
+- GitHub Actions sikeres workflow-k
+- GHCR Packages
+- `kubectl get nodes`
+- `kubectl get pods -n balkfet-infra`
+- `kubectl get pods -n balkfet-local`
+- `kubectl describe pod`, ahol latszik a GHCR image pull
+- Port-forward
+- Kubernetes frontend bongeszoben
+- `/api/hero` valasz
+
+## 9. Megjegyzes
+
+A GHCR package-ek public/all visibility alatt vannak, ezert a helyi kind Kubernetes klaszterben `imagePullSecret` nelkul lehuzhatok. Privat package eseten `imagePullSecret` konfiguracio szukseges.
+
+Reszletesebb dokumentacio:
+
+- `REQSPEC.md`
+- `USER_GUIDE.md`
+- `deployment/deployment_guide.md`
