@@ -115,20 +115,34 @@ HTTP/1.1 200 OK
 
 ## 8. Bizonyitekok / Screenshot Javaslatok
 
-- `dotnet build` sikeres kimenet
-- Angular production build sikeres kimenet
-- `docker compose ps`
-- Frontend bongeszoben
-- Backend API valasz
-- GitHub Actions sikeres workflow-k
-- GHCR Packages
-- `kubectl get nodes`
-- `kubectl get pods -n balkfet-infra`
-- `kubectl get pods -n balkfet-local`
-- `kubectl describe pod`, ahol latszik a GHCR image pull
-- Port-forward
-- Kubernetes frontend bongeszoben
-- `/api/hero` valasz
+Backend build sikeres kimenet:
+
+![Backend build](screenshots/01-Backend_build.jpg)
+
+Angular production build sikeres kimenet:
+
+![Frontend build](screenshots/02_Frontend_build.jpg)
+
+Docker Compose futas es kontener statusz:
+
+![Docker Compose](screenshots/03_Docker_Compose.jpg)
+
+Frontend bongeszoben:
+
+![Frontend browser](screenshots/04_Frontend_browser_screenshot.jpg)
+
+Backend API, proxyzott API es healthcheck valasz:
+
+![Backend API, proxied API and healthcheck](screenshots/05_Backend_API-Proxyzott_API-healthcheck.jpg)
+
+Kubernetes cluster es eroforrasok:
+
+![Kubernetes resources](screenshots/kubernetes.jpg)
+
+Kubernetes podok Running allapotban:
+
+![Kubernetes running](screenshots/kubernetes-running.jpg)
+
 
 ## 9. Megjegyzes
 
